@@ -1,42 +1,41 @@
-import { 
-    createApi
-} from "@reduxjs/toolkit/query/react"
 import type { AuthResponse, LoginRequest, RegisterRequest } from "./AuthTypes";
-import { createAppQuery } from "../../app/api";
+import { securedApi } from "../../app/api";
+import { setLogged } from "./AuthSlice";
 
-export const authApi = createApi({
-    reducerPath: "authApi",
-    baseQuery: createAppQuery("/auth"), // todo: put api address
+export const authApi = securedApi.injectEndpoints({
     endpoints: baseQuery => ({
-        login: baseQuery.mutation<AuthResponse, LoginRequest>({
+        login: baseQuery.mutation<AuthResponse, LoginRequest>({ // авторизироваться по логину/паролю
             query: (body) => ({
                 url: "/login",
                 body,
                 method: "POST",
             })
         }),
-        getMe: baseQuery.query<AuthResponse, void>({
+        getMe: baseQuery.query<AuthResponse, undefined>({ // авторизироваться по куки
             query: () => ({
                 url: "/me",
                 credentials: "include",
                 method: "GET"
             })
         }),
-        register: baseQuery.mutation<AuthResponse, RegisterRequest>({
+        register: baseQuery.mutation<AuthResponse, RegisterRequest>({ // зарегистрироваться
             query: (body) => ({
                 url: "/register",
                 body,
                 method: "POST"
             })
         }),
-        logout: baseQuery.mutation({
+        logout: baseQuery.mutation({ // выйти
             query: () => ({
                 url: "/logout",
                 method: "POST",
                 credentials: "include"
-            })
+            }),
+            onQueryStarted(_, api) { 
+                api.dispatch(setLogged(false));
+            }
         })
     }),
 });
 
-export const { useGetMeQuery, useLoginMutation, useLogoutMutation, useRegisterMutation } = authApi;
+export const { useGetMeQuery, useLoginMutation, useRegisterMutation } = authApi;

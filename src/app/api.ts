@@ -4,23 +4,28 @@ import type {
     FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
 import {
+    createApi,
     fetchBaseQuery,
 } from "@reduxjs/toolkit/query/react"
 
+export const serverUrl = "";
 
-export const createAppQuery = (baseUrl: string) => {
+const rawBaseQuery = fetchBaseQuery({
+    baseUrl: serverUrl 
+});
 
-    const rawBaseQuery = fetchBaseQuery({
-        baseUrl
-    });
+const securedQuery = (async (args, api, extraOptions) => {
+    const result = await rawBaseQuery(args, api, extraOptions);
 
-    return (async (args, api, extraOptions) => {
-        const result = await rawBaseQuery(args, api, extraOptions);
+    if (result.error?.status === 401) {
+        
+    }
 
-        if (result.error?.status === 401) {
-            api.dispatch(api.);
-        }
+    return result;
+}) satisfies BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>
 
-        return result;
-    }) satisfies BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError>
-}
+export const securedApi = createApi({ // "защищенный" api для тех api файлов, чье состояние должно быть общим и зависеть от авторизированности пользователя.
+    reducerPath: "secured",
+    baseQuery: securedQuery,
+    endpoints: () => ({})
+})
