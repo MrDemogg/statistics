@@ -1,6 +1,6 @@
 import type { AuthResponse, LoginRequest, RegisterRequest } from "./AuthTypes";
-import { securedApi } from "../../app/api";
-import { setLogged } from "./AuthSlice";
+import { securedApi } from "../../app/api/securedApi";
+import { authExpire } from "./AuthSlice";
 
 export const authApi = securedApi.injectEndpoints({
     endpoints: baseQuery => ({
@@ -32,7 +32,7 @@ export const authApi = securedApi.injectEndpoints({
                 credentials: "include"
             }),
             onQueryStarted(_, api) { 
-                api.dispatch(setLogged(false));
+                api.dispatch(authExpire());
             }
         })
     }),
