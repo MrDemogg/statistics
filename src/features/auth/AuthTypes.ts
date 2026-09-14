@@ -1,7 +1,3 @@
-export type AuthState = {
-    logged: boolean
-}
-
 export type AuthResponse = {
 	userId: number | null
 }

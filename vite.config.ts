@@ -1,11 +1,25 @@
 import react from "@vitejs/plugin-react"
+import { patchCssModules } from "vite-css-modules"
 import * as path from "node:path"
 import { defineConfig } from "vitest/config"
 import packageJson from "./package.json" with { type: "json" }
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    patchCssModules({
+      generateSourceTypes: true,
+      declarationMap: true
+    }),
+    react()
+  ],
+
+  css: {
+    modules: {}
+  },
+  build: {
+    target: 'es2022'
+  },
 
   server: {
     open: true,

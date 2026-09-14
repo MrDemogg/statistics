@@ -1,0 +1,7 @@
+.navbar {
+    width: 90%;
+    height: 100px;
+    background: #000;
+    border-width: 3px;
+    border-radius: 8px;
+}

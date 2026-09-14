@@ -1,6 +1,17 @@
 import type { AuthResponse, LoginRequest, RegisterRequest } from "./AuthTypes";
-import { securedApi } from "../../app/api/securedApi";
-import { authExpire } from "./AuthSlice";
+import { securedApi } from "../../app/securedApi.ts";
+import type { BaseQueryFn, TypedMutationOnQueryStarted } from "@reduxjs/toolkit/query";
+
+const refetchMeAfterAuth: TypedMutationOnQueryStarted<unknown, unknown, BaseQueryFn> =
+    async (_, { dispatch, queryFulfilled }) => { 
+        try {
+            await queryFulfilled;
+            void dispatch(authApi.endpoints.getMe.initiate())
+        }
+        catch (e) { 
+            console.log(e)
+        }
+    }
 
 export const authApi = securedApi.injectEndpoints({
     endpoints: baseQuery => ({
@@ -9,12 +20,12 @@ export const authApi = securedApi.injectEndpoints({
                 url: "/login",
                 body,
                 method: "POST",
-            })
+            }),
+            onQueryStarted: refetchMeAfterAuth
         }),
-        getMe: baseQuery.query<AuthResponse, undefined>({ // авторизироваться по куки
+        getMe: baseQuery.query<AuthResponse, void>({ // авторизироваться по куки
             query: () => ({
                 url: "/me",
-                credentials: "include",
                 method: "GET"
             })
         }),
@@ -23,19 +34,23 @@ export const authApi = securedApi.injectEndpoints({
                 url: "/register",
                 body,
                 method: "POST"
-            })
+            }),
+            onQueryStarted: refetchMeAfterAuth
         }),
         logout: baseQuery.mutation({ // выйти
             query: () => ({
                 url: "/logout",
                 method: "POST",
-                credentials: "include"
             }),
-            onQueryStarted(_, api) { 
-                api.dispatch(authExpire());
+            async onQueryStarted(_, { dispatch, queryFulfilled }) {
+                try {
+                    await queryFulfilled;
+                } finally {
+                    dispatch(securedApi.util.resetApiState());
+                }
             }
         })
     }),
 });
 
-export const { useGetMeQuery, useLoginMutation, useRegisterMutation } = authApi;
+export const { useGetMeQuery, useLoginMutation, useRegisterMutation, useLogoutMutation } = authApi;
